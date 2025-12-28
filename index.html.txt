@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 WebGuard - Website Safety Checker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @theme {
+            --color-primary: #667eea;
+            --color-secondary: #764ba2;
+        }
+    </style>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+        }
+        
+        .dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+        
+        .bg-main {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+        
+        .bg-card {
+            background-color: var(--bg-card);
+            transition: background-color 0.4s ease;
+        }
+        
+        .text-main {
+            color: var(--text-primary);
+        }
+        
+        .text-sub {
+            color: var(--text-secondary);
+        }
+        
+        .border-main {
+            border-color: var(--border-color);
+        }
+        
+        .input-field {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .dark-mode .input-field {
+            background-color: #334155;
+        }
+        
+        .check-bg {
+            background-color: var(--bg-secondary);
+        }
+        
+        .dark-mode .check-bg {
+            background-color: #334155;
+        }
+        
+        .tip-green {
+            background-color: #dcfce7;
+        }
+        .dark-mode .tip-green {
+            background-color: rgba(34, 197, 94, 0.15);
+        }
+        
+        .tip-blue {
+            background-color: #dbeafe;
+        }
+        .dark-mode .tip-blue {
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+        
+        .tip-yellow {
+            background-color: #fef3c7;
+        }
+        .dark-mode .tip-yellow {
+            background-color: rgba(245, 158, 11, 0.15);
+        }
+        
+        .tip-purple {
+            background-color: #f3e8ff;
+        }
+        .dark-mode .tip-purple {
+            background-color: rgba(168, 85, 247, 0.15);
+        }
+        
+        .analysis-pass {
+            background-color: #dcfce7;
+            border-color: #86efac;
+        }
+        .dark-mode .analysis-pass {
+            background-color: rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .analysis-warning {
+            background-color: #fef3c7;
+            border-color: #fcd34d;
+        }
+        .dark-mode .analysis-warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        
+        .analysis-fail {
+            background-color: #fee2e2;
+            border-color: #fca5a5;
+        }
+        .dark-mode .analysis-fail {
+            background-color: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(0); opacity: 1; }
+            50% { transform: translateY(100px); opacity: 0.5; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .scan-line {
+            animation: scan 2s ease-in-out infinite;
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 1.5s ease-out infinite;
+        }
+        
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-out;
+        }
+        
+        .result-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .safe-gradient { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .warning-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .danger-gradient { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        
+        .check-item {
+            transition: all 0.3s ease;
+        }
+        
+        .check-item.completed {
+            opacity: 1;
+        }
+        
+        .check-item.pending {
+            opacity: 0.5;
+        }
+        
+        .meter-fill {
+            transition: width 1s ease-out, background-color 0.5s ease;
+        }
+        
+        .history-item:hover {
+            transform: translateX(5px);
+        }
+        
+        /* Enhanced Theme Toggle Switch */
+        .theme-toggle {
+            position: relative;
+            width: 80px;
+            height: 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+        
+        .theme-toggle.light {
+            background: linear-gradient(135deg, #87CEEB 0%, #4A90D9 100%);
+            box-shadow: 0 4px 15px rgba(74, 144, 217, 0.4);
+        }
+        
+        .theme-toggle.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            box-shadow: 0 4px 15px rgba(22, 33, 62, 0.6);
+            border-color: #334155;
+        }
+        
+        .theme-toggle .toggle-ball {
+            position: absolute;
+            top: 4px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .theme-toggle.light .toggle-ball {
+            left: 4px;
+            background: linear-gradient(135deg, #FFD93D 0%, #FF6B6B 100%);
+            box-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
+        }
+        
+        .theme-toggle.dark .toggle-ball {
+            left: 44px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .theme-toggle .stars {
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .theme-toggle.dark .stars {
+            opacity: 1;
+        }
+        
+        .theme-toggle .clouds {
+            position: absolute;
+            top: 12px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .theme-toggle.light .clouds {
+            opacity: 1;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .theme-toggle .stars span {
+            animation: twinkle 1.5s ease-in-out infinite;
+        }
+        
+        .theme-toggle .stars span:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        
+        /* Theme mode label */
+        .theme-label {
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        /* Toast notification for theme change */
+        .theme-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .theme-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .theme-toast.dark-toast {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .theme-toast.light-toast {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            color: #1e293b;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Floating button */
+        .floating-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 30;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .floating-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .floating-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .floating-btn.light-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+        
+        .floating-btn.dark-mode {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+        
+        /* Disclaimer box */
+        .disclaimer-box {
+            background-color: var(--bg-secondary);
+        }
+        
+    </style>
+</head>
+<body class="min-h-screen">
+    <div id="app" class="min-h-screen bg-main transition-all duration-300">
+        
+        <!-- Header -->
+        <header class="p-4 md:p-6">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl gradient-bg flex items-center justify-center shadow-lg">
+                        <span class="text-xl md:text-2xl">🛡️</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold text-main">WebGuard</h1>
+                        <p class="text-xs text-sub">Website Safety Checker</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleHistory()" class="p-2 rounded-lg hover:bg-slate-200 dark-mode:hover:bg-slate-700 transition-colors border border-main" title="History">
+                        <svg class="w-6 h-6 text-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Enhanced Theme Toggle -->
+                    <div class="flex items-center gap-3">
+                        <span id="themeLabel" class="theme-label text-sub hidden md:block">☀️ Light</span>
+                        <div id="themeToggle" onclick="toggleDarkMode()" class="theme-toggle light" title="Toggle Dark/Light Mode">
+                            <div class="toggle-ball">
+                                <span id="toggleIcon">☀️</span>
+                            </div>
+                            <div class="stars">
+                                <span>✨</span>
+                                <span>⭐</span>
+                            </div>
+                            <div class="clouds">☁️</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="px-4 pb-8">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Hero Section -->
+                <div class="text-center mb-8 md:mb-12">
+                    <div class="float inline-block mb-4">
+                        <span class="text-6xl md:text-7xl">🔍</span>
+                    </div>
+                    <h2 class="text-2xl md:text-4xl font-bold text-main mb-3">
+                        Is This Website Safe? <span class="text-purple-600">Find Out Now!</span>
+                    </h2>
+                    <p class="text-sub text-sm md:text-base max-w-2xl mx-auto">
+                        Paste any website URL and instantly know if it's <strong>safe</strong> or <strong>fraudulent</strong>. 
+                        Protect yourself from online scams! 🛡️
+                    </p>
+                </div>
+
+                <!-- URL Input Section -->
+                <div class="bg-card rounded-2xl shadow-xl p-4 md:p-6 mb-6">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <div class="flex-1 relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔗</span>
+                            <input 
+                                type="text" 
+                                id="urlInput" 
+                                placeholder="Paste website URL here (e.g., https://example.com)"
+                                class="w-full pl-12 pr-4 py-4 rounded-xl border-2 input-field placeholder-slate-400 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all text-sm md:text-base"
+                                onkeypress="if(event.key === 'Enter') analyzeWebsite()"
+                            >
+                        </div>
+                        <button 
+                            onclick="analyzeWebsite()" 
+                            id="analyzeBtn"
+                            class="gradient-bg text-white font-semibold px-8 py-4 rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 min-w-[160px]"
+                        >
+                            <span>🔎</span>
+                            <span>Scan Now</span>
+                        </button>
+                    </div>
+                    <p id="urlError" class="text-red-500 text-sm mt-2 hidden">⚠️ Please enter a valid URL (with https:// or http://)</p>
+                </div>
+
+                <!-- Scanning Animation -->
+                <div id="scanningSection" class="hidden">
+                    <div class="bg-card rounded-2xl shadow-xl p-6 md:p-8 text-center">
+                        <div class="relative w-32 h-32 mx-auto mb-6">
+                            <div class="absolute inset-0 rounded-full border-4 border-purple-200"></div>
+                            <div class="absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent animate-spin"></div>
+                            <div class="absolute inset-4 rounded-full bg-purple-100 flex items-center justify-center">
+                                <span class="text-4xl scan-line">🔍</span>
+                            </div>
+                            <div class="absolute inset-0 rounded-full border-4 border-purple-400 pulse-ring"></div>
+                        </div>
+                        <h3 class="text-xl font-bold text-main mb-4">Scanning Website...</h3>
+                        
+                        <!-- Check Items -->
+                        <div class="max-w-md mx-auto text-left space-y-3" id="checkItems">
+                            <div class="check-item pending flex items-center gap-3 p-3 rounded-lg check-bg">
+                                <span class="text-lg" id="check1Icon">⏳</span>
+                                <span class="text-sub text-sm">SSL Certificate Check</span>
+                            </div>
+                            <div class="check-item pending flex items-center gap-3 p-3 rounded-lg check-bg">
+                                <span class="text-lg" id="check2Icon">⏳</span>
+                                <span class="text-sub text-sm">Domain Age Analysis</span>
+                            </div>
+                            <div class="check-item pending flex items-center gap-3 p-3 rounded-lg check-bg">
+                                <span class="text-lg" id="check3Icon">⏳</span>
+                                <span class="text-sub text-sm">WHOIS Data Verification</span>
+                            </div>
+                            <div class="check-item pending flex items-center gap-3 p-3 rounded-lg check-bg">
+                                <span class="text-lg" id="check4Icon">⏳</span>
+                                <span class="text-sub text-sm">Blacklist Database Check</span>
+                            </div>
+                            <div class="check-item pending flex items-center gap-3 p-3 rounded-lg check-bg">
+                                <span class="text-lg" id="check5Icon">⏳</span>
+                                <span class="text-sub text-sm">Content & Keywords Analysis</span>
+                            </div>
+                            <div class="check-item pending flex items-center gap-3 p-3 rounded-lg check-bg">
+                                <span class="text-lg" id="check6Icon">⏳</span>
+                                <span class="text-sub text-sm">DNS & Hosting Reputation</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="mt-6 max-w-md mx-auto">
+                            <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div id="progressBar" class="h-full gradient-bg progress-bar" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-sub mt-2"><span id="progressText">0</span>% Complete</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Section -->
+                <div id="resultSection" class="hidden">
+                    <div id="resultCard" class="result-card rounded-2xl shadow-xl p-6 md:p-8 text-white mb-6">
+                        <div class="flex flex-col md:flex-row items-center gap-6">
+                            <!-- Score Circle -->
+                            <div class="relative">
+                                <div class="w-40 h-40 md:w-48 md:h-48 rounded-full bg-white/20 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <div class="text-5xl md:text-6xl font-bold" id="scoreValue">0</div>
+                                        <div class="text-lg opacity-90">% Risk</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Result Info -->
+                            <div class="flex-1 text-center md:text-left">
+                                <div class="text-4xl mb-2" id="resultEmoji">🛡️</div>
+                                <h3 class="text-2xl md:text-3xl font-bold mb-2" id="resultStatus">Safe Website</h3>
+                                <p class="text-lg opacity-90 mb-4" id="resultUrl">example.com</p>
+                                <p class="text-white/80 text-sm md:text-base" id="resultMessage">
+                                    This website appears to be safe for normal browsing.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Trust Meter -->
+                        <div class="mt-6 bg-white/10 rounded-xl p-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span>🟢 Safe</span>
+                                <span>Trust Meter</span>
+                                <span>Fraud 🔴</span>
+                            </div>
+                            <div class="h-4 bg-white/20 rounded-full overflow-hidden">
+                                <div id="trustMeter" class="meter-fill h-full rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Why This Score Section -->
+                    <div class="bg-card rounded-2xl shadow-xl p-6 mb-6">
+                        <h4 class="text-lg font-bold text-main mb-4 flex items-center gap-2">
+                            <span>📊</span> Why This Score?
+                        </h4>
+                        <div id="analysisDetails" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-3 justify-center mb-6">
+                        <button onclick="shareResult()" class="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors shadow-lg">
+                            <span>📤</span> Share Result
+                        </button>
+                        <button onclick="resetScanner()" class="flex items-center gap-2 px-6 py-3 bg-card border border-main hover:opacity-80 text-main rounded-xl transition-colors">
+                            <span>🔄</span> Scan Another
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Safety Tips Section -->
+                <div class="bg-card rounded-2xl shadow-xl p-6 mb-6">
+                    <h4 class="text-lg font-bold text-main mb-4 flex items-center gap-2">
+                        <span>💡</span> Safety Tips
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex gap-3 p-4 tip-green rounded-xl">
+                            <span class="text-2xl">🔒</span>
+                            <div>
+                                <h5 class="font-semibold text-main">Check for HTTPS</h5>
+                                <p class="text-sm text-sub">Website URL should have https://, not just http://</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-4 tip-blue rounded-xl">
+                            <span class="text-2xl">🎁</span>
+                            <div>
+                                <h5 class="font-semibold text-main">Beware of Free Offers</h5>
+                                <p class="text-sm text-sub">"Free iPhone", "Lottery Winner" offers are usually fake</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-4 tip-yellow rounded-xl">
+                            <span class="text-2xl">🔗</span>
+                            <div>
+                                <h5 class="font-semibold text-main">Check URL Carefully</h5>
+                                <p class="text-sm text-sub">amazon.com vs amaz0n.com - spelling mistakes indicate fraud</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-4 tip-purple rounded-xl">
+                            <span class="text-2xl">💳</span>
+                            <div>
+                                <h5 class="font-semibold text-main">Protect Payment Info</h5>
+                                <p class="text-sm text-sub">Never share card/bank details on unknown websites</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="text-center text-sm text-sub p-4 disclaimer-box rounded-xl">
+                    <p>⚠️ <strong>Disclaimer:</strong> This is an AI-based estimation. 100% accuracy is not guaranteed. 
+                    Always use your own judgment and stay away from suspicious sites.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- History Sidebar -->
+        <div id="historySidebar" class="fixed top-0 right-0 h-full w-80 bg-card shadow-2xl transform translate-x-full transition-transform duration-300 z-50 overflow-hidden">
+            <div class="p-4 border-b border-main flex justify-between items-center">
+                <h3 class="font-bold text-main flex items-center gap-2">
+                    <span>📜</span> Scan History
+                </h3>
+                <button onclick="toggleHistory()" class="p-2 hover:opacity-70 rounded-lg">
+                    <svg class="w-5 h-5 text-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="historyList" class="p-4 space-y-3 overflow-y-auto" style="max-height: calc(100vh - 120px);">
+                <p class="text-sub text-sm text-center py-8">No history yet</p>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-main bg-card">
+                <button onclick="clearHistory()" class="w-full py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors">
+                    🗑️ Clear History
+                </button>
+            </div>
+        </div>
+
+        <!-- Overlay -->
+        <div id="overlay" class="fixed inset-0 bg-black/50 hidden z-40" onclick="toggleHistory()"></div>
+        
+        <!-- Floating Theme Button (Mobile) -->
+        <div id="floatingThemeBtn" onclick="toggleDarkMode()" class="floating-btn light-mode md:hidden">
+            <span id="floatingThemeIcon" class="text-2xl">🌙</span>
+        </div>
+        
+        <!-- Theme Change Toast -->
+        <div id="themeToast" class="theme-toast">
+            <span id="toastIcon">🌙</span>
+            <span id="toastText">Dark Mode Activated</span>
+        </div>
+    </div>
+
+    <script>
+        // Dark Mode State
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+        
+        function applyTheme() {
+            const body = document.body;
+            const toggle = document.getElementById('themeToggle');
+            const toggleIcon = document.getElementById('toggleIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            const floatingBtn = document.getElementById('floatingThemeBtn');
+            const floatingIcon = document.getElementById('floatingThemeIcon');
+            
+            if (isDarkMode) {
+                // Apply dark mode
+                body.classList.add('dark-mode');
+                toggle.classList.remove('light');
+                toggle.classList.add('dark');
+                toggleIcon.textContent = '🌙';
+                themeLabel.textContent = '🌙 Dark';
+                floatingBtn.classList.remove('light-mode');
+                floatingBtn.classList.add('dark-mode');
+                floatingIcon.textContent = '☀️';
+            } else {
+                // Apply light mode
+                body.classList.remove('dark-mode');
+                toggle.classList.remove('dark');
+                toggle.classList.add('light');
+                toggleIcon.textContent = '☀️';
+                themeLabel.textContent = '☀️ Light';
+                floatingBtn.classList.remove('dark-mode');
+                floatingBtn.classList.add('light-mode');
+                floatingIcon.textContent = '🌙';
+            }
+        }
+        
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('darkMode', isDarkMode);
+            applyTheme();
+            
+            // Add animation feedback
+            const toggle = document.getElementById('themeToggle');
+            toggle.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                toggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Show toast notification
+            showThemeToast();
+        }
+        
+        function showThemeToast() {
+            const toast = document.getElementById('themeToast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastText = document.getElementById('toastText');
+            
+            // Remove existing classes
+            toast.classList.remove('show', 'dark-toast', 'light-toast');
+            
+            if (isDarkMode) {
+                toastIcon.textContent = '🌙';
+                toastText.textContent = 'Dark Mode Activated';
+                toast.classList.add('dark-toast');
+            } else {
+                toastIcon.textContent = '☀️';
+                toastText.textContent = 'Light Mode Activated';
+                toast.classList.add('light-toast');
+            }
+            
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 50);
+            
+            // Hide toast after 2 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+        
+        // Apply theme on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme();
+            loadHistory();
+        });
+
+        // History Functions
+        function toggleHistory() {
+            const sidebar = document.getElementById('historySidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('translate-x-full');
+            overlay.classList.toggle('hidden');
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+            const listEl = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                listEl.innerHTML = '<p class="text-sub text-sm text-center py-8">No history yet</p>';
+                return;
+            }
+            
+            listEl.innerHTML = history.map((item, index) => `
+                <div class="history-item p-3 rounded-xl border border-main cursor-pointer transition-all hover:shadow-md bg-card" onclick="loadFromHistory(${index})">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${getScoreClass(item.score)}">
+                            ${item.score}%
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-main truncate">${item.url}</p>
+                            <p class="text-xs text-sub">${item.date}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getScoreClass(score) {
+            if (score <= 30) return 'bg-green-500';
+            if (score <= 60) return 'bg-yellow-500';
+            return 'bg-red-500';
+        }
+
+        function saveToHistory(url, score, status) {
+            const history = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+            history.unshift({
+                url: url,
+                score: score,
+                status: status,
+                date: new Date().toLocaleString('en-US')
+            });
+            if (history.length > 20) history.pop();
+            localStorage.setItem('scanHistory', JSON.stringify(history));
+        }
+
+        function loadFromHistory(index) {
+            const history = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+            if (history[index]) {
+                document.getElementById('urlInput').value = history[index].url;
+                toggleHistory();
+                analyzeWebsite();
+            }
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('scanHistory');
+            loadHistory();
+        }
+
+        // URL Validation
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Known safe domains (for simulation)
+        const safeDomains = ['google.com', 'facebook.com', 'amazon.com', 'flipkart.com', 'microsoft.com', 'apple.com', 'github.com', 'linkedin.com', 'twitter.com', 'youtube.com', 'instagram.com', 'wikipedia.org', 'netflix.com', 'whatsapp.com', 'paytm.com', 'phonepe.com', 'gpay.com', 'sbi.co.in', 'icicibank.com', 'hdfcbank.com'];
+        
+        const suspiciousKeywords = ['free-money', 'instant-cash', 'lottery', 'winner', 'prize', 'claim', 'urgent', 'verify-account', 'suspended', 'locked', 'security-alert', 'bitcoin-free', 'crypto-giveaway', 'investment-double'];
+        
+        const suspiciousTLDs = ['.xyz', '.top', '.club', '.work', '.click', '.link', '.tk', '.ml', '.ga', '.cf', '.gq'];
+
+        // Analyze Website
+        async function analyzeWebsite() {
+            let url = document.getElementById('urlInput').value.trim();
+            const errorEl = document.getElementById('urlError');
+            
+            // Add https if missing
+            if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+                document.getElementById('urlInput').value = url;
+            }
+            
+            if (!url || !isValidUrl(url)) {
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            
+            errorEl.classList.add('hidden');
+            
+            // Show scanning section
+            document.getElementById('scanningSection').classList.remove('hidden');
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('analyzeBtn').innerHTML = '<span class="animate-spin">⏳</span> Scanning...';
+            
+            // Reset check items
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`check${i}Icon`).textContent = '⏳';
+            }
+            
+            // Simulate analysis
+            const urlObj = new URL(url);
+            const domain = urlObj.hostname.replace('www.', '');
+            
+            let analysisData = {
+                ssl: { score: 0, status: '', message: '' },
+                domainAge: { score: 0, status: '', message: '' },
+                whois: { score: 0, status: '', message: '' },
+                blacklist: { score: 0, status: '', message: '' },
+                content: { score: 0, status: '', message: '' },
+                dns: { score: 0, status: '', message: '' }
+            };
+            
+            // Check 1: SSL
+            await animateCheck(1, 15);
+            const hasHttps = url.startsWith('https://');
+            analysisData.ssl = {
+                score: hasHttps ? 0 : 25,
+                status: hasHttps ? 'pass' : 'fail',
+                message: hasHttps ? 'HTTPS enabled - Secure connection ✅' : 'No HTTPS - Connection not secure ❌'
+            };
+            document.getElementById('check1Icon').textContent = hasHttps ? '✅' : '❌';
+            
+            // Check 2: Domain Age
+            await animateCheck(2, 30);
+            const isSafeDomain = safeDomains.some(d => domain.includes(d));
+            const domainAgeScore = isSafeDomain ? 0 : (Math.random() > 0.5 ? 10 : 20);
+            analysisData.domainAge = {
+                score: domainAgeScore,
+                status: domainAgeScore < 15 ? 'pass' : 'warning',
+                message: domainAgeScore < 15 ? 'Established domain - Trustworthy ✅' : 'New domain - Use caution ⚠️'
+            };
+            document.getElementById('check2Icon').textContent = domainAgeScore < 15 ? '✅' : '⚠️';
+            
+            // Check 3: WHOIS
+            await animateCheck(3, 50);
+            const whoisScore = isSafeDomain ? 0 : (Math.random() > 0.6 ? 5 : 15);
+            analysisData.whois = {
+                score: whoisScore,
+                status: whoisScore < 10 ? 'pass' : 'warning',
+                message: whoisScore < 10 ? 'WHOIS data is transparent ✅' : 'WHOIS data is hidden ⚠️'
+            };
+            document.getElementById('check3Icon').textContent = whoisScore < 10 ? '✅' : '⚠️';
+            
+            // Check 4: Blacklist
+            await animateCheck(4, 70);
+            const hasSuspiciousKeyword = suspiciousKeywords.some(k => url.toLowerCase().includes(k));
+            const blacklistScore = hasSuspiciousKeyword ? 30 : (isSafeDomain ? 0 : 5);
+            analysisData.blacklist = {
+                score: blacklistScore,
+                status: blacklistScore < 10 ? 'pass' : 'fail',
+                message: blacklistScore < 10 ? 'Not found in any blacklist ✅' : 'Suspicious patterns detected ❌'
+            };
+            document.getElementById('check4Icon').textContent = blacklistScore < 10 ? '✅' : '❌';
+            
+            // Check 5: Content Analysis
+            await animateCheck(5, 85);
+            const hasSuspiciousTLD = suspiciousTLDs.some(tld => domain.endsWith(tld));
+            const contentScore = hasSuspiciousTLD ? 20 : (hasSuspiciousKeyword ? 25 : (isSafeDomain ? 0 : 10));
+            analysisData.content = {
+                score: contentScore,
+                status: contentScore < 15 ? 'pass' : 'warning',
+                message: contentScore < 15 ? 'Content appears safe ✅' : 'Suspicious keywords/patterns found ⚠️'
+            };
+            document.getElementById('check5Icon').textContent = contentScore < 15 ? '✅' : '⚠️';
+            
+            // Check 6: DNS
+            await animateCheck(6, 100);
+            const dnsScore = isSafeDomain ? 0 : (hasSuspiciousTLD ? 15 : 5);
+            analysisData.dns = {
+                score: dnsScore,
+                status: dnsScore < 10 ? 'pass' : 'warning',
+                message: dnsScore < 10 ? 'DNS & hosting is reputable ✅' : 'Hosting reputation unclear ⚠️'
+            };
+            document.getElementById('check6Icon').textContent = dnsScore < 10 ? '✅' : '⚠️';
+            
+            // Calculate final score
+            const totalScore = Math.min(100, Math.round(
+                analysisData.ssl.score + 
+                analysisData.domainAge.score + 
+                analysisData.whois.score + 
+                analysisData.blacklist.score + 
+                analysisData.content.score + 
+                analysisData.dns.score
+            ));
+            
+            // Wait a moment before showing results
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Show results
+            showResults(url, domain, totalScore, analysisData);
+        }
+
+        async function animateCheck(checkNum, progress) {
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress;
+            await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 300));
+        }
+
+        function showResults(url, domain, score, analysisData) {
+            document.getElementById('scanningSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            document.getElementById('analyzeBtn').disabled = false;
+            document.getElementById('analyzeBtn').innerHTML = '<span>🔎</span><span>Scan Now</span>';
+            
+            const resultCard = document.getElementById('resultCard');
+            const scoreEl = document.getElementById('scoreValue');
+            const statusEl = document.getElementById('resultStatus');
+            const emojiEl = document.getElementById('resultEmoji');
+            const messageEl = document.getElementById('resultMessage');
+            const urlEl = document.getElementById('resultUrl');
+            const meterEl = document.getElementById('trustMeter');
+            
+            urlEl.textContent = domain;
+            
+            // Animate score
+            let currentScore = 0;
+            const scoreInterval = setInterval(() => {
+                if (currentScore >= score) {
+                    clearInterval(scoreInterval);
+                    return;
+                }
+                currentScore++;
+                scoreEl.textContent = currentScore;
+            }, 20);
+            
+            // Set colors and messages based on score
+            let status, emoji, message, colorClass, meterColor;
+            
+            if (score <= 30) {
+                status = 'Safe Website ✅';
+                emoji = '🛡️';
+                message = 'This website appears to be safe! It is suitable for normal browsing. However, always be careful when sharing personal details.';
+                colorClass = 'safe-gradient';
+                meterColor = '#10b981';
+            } else if (score <= 60) {
+                status = 'Suspicious ⚠️';
+                emoji = '⚠️';
+                message = 'This website shows some suspicious signs. Use with caution and avoid sharing personal or financial information.';
+                colorClass = 'warning-gradient';
+                meterColor = '#f59e0b';
+            } else {
+                status = 'High Fraud Risk 🚨';
+                emoji = '🚫';
+                message = 'DANGER! This website may be fraudulent. Stay away from this website and do not share any personal information!';
+                colorClass = 'danger-gradient';
+                meterColor = '#ef4444';
+            }
+            
+            resultCard.className = `result-card rounded-2xl shadow-xl p-6 md:p-8 text-white mb-6 ${colorClass}`;
+            statusEl.textContent = status;
+            emojiEl.textContent = emoji;
+            messageEl.textContent = message;
+            
+            // Animate meter
+            setTimeout(() => {
+                meterEl.style.width = score + '%';
+                meterEl.style.backgroundColor = meterColor;
+            }, 100);
+            
+            // Show analysis details
+            const detailsEl = document.getElementById('analysisDetails');
+            detailsEl.innerHTML = Object.entries(analysisData).map(([key, data]) => {
+                const labels = {
+                    ssl: 'SSL Certificate',
+                    domainAge: 'Domain Age',
+                    whois: 'WHOIS Data',
+                    blacklist: 'Blacklist Check',
+                    content: 'Content Analysis',
+                    dns: 'DNS & Hosting'
+                };
+                const bgClass = data.status === 'pass' ? 'analysis-pass' : 
+                               data.status === 'warning' ? 'analysis-warning' : 
+                               'analysis-fail';
+                return `
+                    <div class="p-3 rounded-xl border ${bgClass}">
+                        <div class="font-medium text-main text-sm">${labels[key]}</div>
+                        <div class="text-xs text-sub mt-1">${data.message}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Save to history
+            saveToHistory(domain, score, status);
+        }
+
+        function resetScanner() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = '0';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function shareResult() {
+            const url = document.getElementById('resultUrl').textContent;
+            const score = document.getElementById('scoreValue').textContent;
+            const status = document.getElementById('resultStatus').textContent;
+            
+            const shareText = `🔍 WebGuard Scan Result:\n\n🌐 Website: ${url}\n📊 Risk Score: ${score}%\n🏷️ Status: ${status}\n\nCheck any website's safety at WebGuard!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'WebGuard Scan Result',
+                    text: shareText
+                });
+            } else {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Result copied to clipboard! ✅');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
